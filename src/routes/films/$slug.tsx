@@ -1,11 +1,9 @@
-﻿import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getFilm, getNextFilm } from "@/data/films";
 import { Reveal } from "@/components/Reveal";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export const Route = createFileRoute("/films/$slug")({
   loader: ({ params }) => {
@@ -42,6 +40,7 @@ function FilmDetailComponent() {
   const [screenerOpen, setScreenerOpen] = useState(false);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
     const el = heroRef.current;
     if (!el) return;
 

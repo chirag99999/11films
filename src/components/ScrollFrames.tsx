@@ -1,8 +1,6 @@
-﻿import { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export interface Frame {
   src: string;
@@ -15,6 +13,7 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
     const container = containerRef.current;
     if (!container) return;
 

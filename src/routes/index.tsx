@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -7,8 +7,6 @@ import { Reveal } from "@/components/Reveal";
 import { ScrollFrames, Frame } from "@/components/ScrollFrames";
 import { expandFilmThumbnail } from "@/components/FilmExpand";
 import { films, featuredFilm, stills } from "@/data/films";
-
-gsap.registerPlugin(ScrollTrigger);
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -128,6 +126,7 @@ function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
     const el = sectionRef.current;
     if (!el) return;
     const q = gsap.utils.selector(el);

@@ -1,8 +1,6 @@
-﻿import { useRef, useEffect, ReactNode, ElementType } from "react";
+import { useRef, useEffect, ReactNode, ElementType } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
 
 interface RevealProps {
   children: ReactNode;
@@ -22,6 +20,7 @@ export function Reveal({
   const ref = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
     const el = ref.current;
     if (!el) return;
     const mm = gsap.matchMedia();
