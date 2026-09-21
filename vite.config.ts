@@ -6,6 +6,9 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+// Detect if running in Vercel's build environment
+const isVercel = Boolean(process.env.VERCEL);
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -13,4 +16,6 @@ export default defineConfig({
     router: { entry: "router" },
     server: { entry: "server" },
   },
+  // Force Nitro to output for Vercel Serverless Functions when deployed on Vercel
+  nitro: isVercel ? { preset: "vercel" } : true,
 });
