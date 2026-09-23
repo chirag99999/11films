@@ -1,7 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getFilm, getNextFilm } from "@/data/films";
 import { Reveal } from "@/components/Reveal";
 
@@ -40,33 +39,39 @@ function FilmDetailComponent() {
   const [screenerOpen, setScreenerOpen] = useState(false);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
     const el = heroRef.current;
     if (!el) return;
 
-    const q = gsap.utils.selector(el);
-    const mm = gsap.matchMedia();
+    let mm: ReturnType<typeof gsap.matchMedia> | undefined;
 
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.fromTo(q("[data-img]"), { scale: 1.08 }, { scale: 1, duration: 2.2, ease: "power2.out" });
-      gsap.fromTo(
-        q("[data-text]"),
-        { autoAlpha: 0, y: 24 },
-        { autoAlpha: 1, y: 0, duration: 1, stagger: 0.12, delay: 0.5, ease: "power3.out" }
-      );
-      gsap.to(q("[data-img]"), {
-        yPercent: 20,
-        ease: "none",
-        scrollTrigger: {
-          trigger: el,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
+    import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
+      if (!heroRef.current) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      const q = gsap.utils.selector(el);
+      mm = gsap.matchMedia();
+
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(q("[data-img]"), { scale: 1.08 }, { scale: 1, duration: 2.2, ease: "power2.out" });
+        gsap.fromTo(
+          q("[data-text]"),
+          { autoAlpha: 0, y: 24 },
+          { autoAlpha: 1, y: 0, duration: 1, stagger: 0.12, delay: 0.5, ease: "power3.out" }
+        );
+        gsap.to(q("[data-img]"), {
+          yPercent: 20,
+          ease: "none",
+          scrollTrigger: {
+            trigger: el,
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        });
       });
     });
 
-    return () => mm.revert();
+    return () => mm?.revert();
   }, [film.slug]);
 
   return (

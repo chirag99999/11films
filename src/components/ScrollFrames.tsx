@@ -1,6 +1,5 @@
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export interface Frame {
   src: string;
@@ -13,89 +12,95 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
     const container = containerRef.current;
     if (!container) return;
 
-    const mm = gsap.matchMedia();
-    mm.add(
-      {
-        motion: "(prefers-reduced-motion: no-preference)",
-        desktop: "(min-width: 768px)",
-      },
-      (context) => {
-        const isDesktop = context.conditions?.desktop;
-        const frameEls = gsap.utils.toArray<HTMLElement>(
-          container.querySelectorAll("[data-frame]")
-        );
+    let mm: ReturnType<typeof gsap.matchMedia> | undefined;
 
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: container,
-            start: "top top",
-            end: () => `+=${frames.length * (isDesktop ? 120 : 90)}%`,
-            pin: true,
-            scrub: 1,
-          },
+    import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
+      if (!containerRef.current) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      mm = gsap.matchMedia();
+      mm.add(
+        {
+          motion: "(prefers-reduced-motion: no-preference)",
+          desktop: "(min-width: 768px)",
+        },
+        (context) => {
+          const isDesktop = context.conditions?.desktop;
+          const frameEls = gsap.utils.toArray<HTMLElement>(
+            container.querySelectorAll("[data-frame]")
+          );
+
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: container,
+              start: "top top",
+              end: () => `+=${frames.length * (isDesktop ? 120 : 90)}%`,
+              pin: true,
+              scrub: 1,
+            },
+          });
+
+          frameEls.forEach((frame, i) => {
+            const img = frame.querySelector<HTMLElement>("[data-img]");
+            const text = frame.querySelector<HTMLElement>("[data-text]");
+            const step = i * 3;
+
+            tl.set(frame, { autoAlpha: 1 }, step)
+              .fromTo(
+                img,
+                {
+                  scale: isDesktop ? 0.42 : 0.7,
+                  rotate: -5,
+                  yPercent: 8,
+                  autoAlpha: 0,
+                },
+                {
+                  scale: isDesktop ? 0.55 : 0.8,
+                  rotate: 0,
+                  yPercent: 0,
+                  autoAlpha: 1,
+                  duration: 1,
+                  ease: "power2.out",
+                },
+                step
+              )
+              .fromTo(
+                text,
+                { autoAlpha: 0, y: 30 },
+                { autoAlpha: 1, y: 0, duration: 0.6 },
+                step + 0.7
+              )
+              .to(img, { scale: 1, duration: 1, ease: "power3.inOut" }, step + 1.4)
+              .to(text, { autoAlpha: 0, y: -20, duration: 0.5 }, step + 1.5);
+
+            if (i < frameEls.length - 1) {
+              tl.to(img, { autoAlpha: 0, scale: 1.08, duration: 0.6 }, step + 2.5).set(
+                frame,
+                { autoAlpha: 0 },
+                step + 3
+              );
+            }
+          });
+        }
+      );
+
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        gsap.set(container.querySelectorAll("[data-frame]"), {
+          position: "relative",
+          autoAlpha: 1,
+          height: "auto",
         });
-
-        frameEls.forEach((frame, i) => {
-          const img = frame.querySelector<HTMLElement>("[data-img]");
-          const text = frame.querySelector<HTMLElement>("[data-text]");
-          const step = i * 3;
-
-          tl.set(frame, { autoAlpha: 1 }, step)
-            .fromTo(
-              img,
-              {
-                scale: isDesktop ? 0.42 : 0.7,
-                rotate: -5,
-                yPercent: 8,
-                autoAlpha: 0,
-              },
-              {
-                scale: isDesktop ? 0.55 : 0.8,
-                rotate: 0,
-                yPercent: 0,
-                autoAlpha: 1,
-                duration: 1,
-                ease: "power2.out",
-              },
-              step
-            )
-            .fromTo(
-              text,
-              { autoAlpha: 0, y: 30 },
-              { autoAlpha: 1, y: 0, duration: 0.6 },
-              step + 0.7
-            )
-            .to(img, { scale: 1, duration: 1, ease: "power3.inOut" }, step + 1.4)
-            .to(text, { autoAlpha: 0, y: -20, duration: 0.5 }, step + 1.5);
-
-          if (i < frameEls.length - 1) {
-            tl.to(img, { autoAlpha: 0, scale: 1.08, duration: 0.6 }, step + 2.5).set(
-              frame,
-              { autoAlpha: 0 },
-              step + 3
-            );
-          }
+        gsap.set(container.querySelectorAll("[data-img], [data-text]"), {
+          autoAlpha: 1,
+          clearProps: "transform",
         });
-      }
-    );
-
-    mm.add("(prefers-reduced-motion: reduce)", () => {
-      gsap.set(container.querySelectorAll("[data-frame]"), {
-        position: "relative",
-        autoAlpha: 1,
-        height: "auto",
-      });
-      gsap.set(container.querySelectorAll("[data-img], [data-text]"), {
-        autoAlpha: 1,
-        clearProps: "transform",
       });
     });
 
-    return () => mm.revert();
+    return () => mm?.revert();
   }, [frames.length]);
 
   return (

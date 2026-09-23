@@ -16,6 +16,16 @@ export default defineConfig({
     router: { entry: "router" },
     server: { entry: "server" },
   },
-  // Force Nitro to output for Vercel Serverless Functions when deployed on Vercel
-  nitro: isVercel ? { preset: "vercel" } : true,
+  // Force Nitro to output for Vercel Serverless Functions when deployed on Vercel.
+  // Also externalize browser-only libraries so they don't execute on the Node.js SSR server.
+  nitro: isVercel
+    ? {
+        preset: "vercel",
+        externals: {
+          // These packages access window/document at import time and must not run on the server
+          inline: [],
+          external: ["gsap", "gsap/ScrollTrigger", "lenis"],
+        },
+      }
+    : true,
 });

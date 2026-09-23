@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
 import { ScrollFrames, Frame } from "@/components/ScrollFrames";
@@ -126,48 +125,58 @@ function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
     const el = sectionRef.current;
     if (!el) return;
-    const q = gsap.utils.selector(el);
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const nav = document.getElementById("site-nav");
 
-    if (nav) gsap.set(nav, { autoAlpha: 0 });
+    let scrollTl: ReturnType<typeof gsap.timeline> | undefined;
+    let tl: ReturnType<typeof gsap.timeline> | undefined;
+    let startAnimation: (() => void) | undefined;
 
-    const tl = gsap.timeline({ paused: true, defaults: { ease: "power2.out" } });
+    import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
+      if (!sectionRef.current) return;
+      gsap.registerPlugin(ScrollTrigger);
 
-    if (prefersReducedMotion) {
-      tl.set([q("[data-img]"), q("[data-text]"), nav], { autoAlpha: 1, scale: 1 });
-    } else {
-      tl.fromTo(q("[data-img]"), { autoAlpha: 0, scale: 1.18 }, { autoAlpha: 1, scale: 1.06, duration: 2.6, ease: "power2.inOut" })
-        .fromTo(q("[data-text]"), { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15 }, 1.6);
-      if (nav) tl.to(nav, { autoAlpha: 1, duration: 0.9 }, 2.2);
-    }
+      const q = gsap.utils.selector(el);
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const nav = document.getElementById("site-nav");
 
-    const startAnimation = () => tl.play();
+      if (nav) gsap.set(nav, { autoAlpha: 0 });
 
-    if (hasEntered()) {
-      startAnimation();
-    }
-    window.addEventListener(ENTER_EVENT, startAnimation, { once: true });
+      tl = gsap.timeline({ paused: true, defaults: { ease: "power2.out" } });
 
-    const scrollTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: el,
-        start: "top top",
-        end: "bottom top",
-        scrub: true,
-      },
-    })
-      .to(q("[data-img]"), { yPercent: 18, scale: 1.16, ease: "none" }, 0)
-      .to(q("[data-text]"), { y: -60, autoAlpha: 0, ease: "none" }, 0);
+      if (prefersReducedMotion) {
+        tl.set([q("[data-img]"), q("[data-text]"), nav], { autoAlpha: 1, scale: 1 });
+      } else {
+        tl.fromTo(q("[data-img]"), { autoAlpha: 0, scale: 1.18 }, { autoAlpha: 1, scale: 1.06, duration: 2.6, ease: "power2.inOut" })
+          .fromTo(q("[data-text]"), { autoAlpha: 0, y: 24 }, { autoAlpha: 1, y: 0, duration: 1, stagger: 0.15 }, 1.6);
+        if (nav) tl.to(nav, { autoAlpha: 1, duration: 0.9 }, 2.2);
+      }
+
+      startAnimation = () => tl!.play();
+
+      if (hasEntered()) {
+        startAnimation();
+      }
+      window.addEventListener(ENTER_EVENT, startAnimation, { once: true });
+
+      scrollTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: el,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      })
+        .to(q("[data-img]"), { yPercent: 18, scale: 1.16, ease: "none" }, 0)
+        .to(q("[data-text]"), { y: -60, autoAlpha: 0, ease: "none" }, 0);
+    });
 
     return () => {
-      window.removeEventListener(ENTER_EVENT, startAnimation);
-      tl.kill();
-      scrollTl.scrollTrigger?.kill();
-      scrollTl.kill();
+      if (startAnimation) window.removeEventListener(ENTER_EVENT, startAnimation);
+      tl?.kill();
+      scrollTl?.scrollTrigger?.kill();
+      scrollTl?.kill();
+      const nav = document.getElementById("site-nav");
       if (nav) gsap.set(nav, { clearProps: "all" });
     };
   }, []);

@@ -1,6 +1,5 @@
 import { useRef, useEffect, ReactNode, ElementType } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 interface RevealProps {
   children: ReactNode;
@@ -20,29 +19,37 @@ export function Reveal({
   const ref = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
     const el = ref.current;
     if (!el) return;
-    const mm = gsap.matchMedia();
-    mm.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.fromTo(
-        el,
-        { y, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 1.1,
-          delay,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 88%",
-            once: true,
-          },
-        }
-      );
+
+    let mm: ReturnType<typeof gsap.matchMedia> | undefined;
+
+    import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
+      if (!ref.current) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.fromTo(
+          el,
+          { y, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1.1,
+            delay,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: el,
+              start: "top 88%",
+              once: true,
+            },
+          }
+        );
+      });
     });
-    return () => mm.revert();
+
+    return () => mm?.revert();
   }, [delay, y]);
 
   return (

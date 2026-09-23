@@ -1,4 +1,4 @@
-﻿import {
+import {
   Outlet,
   ScrollRestoration,
   createRootRoute,
@@ -7,7 +7,6 @@
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect } from "react";
-import Lenis from "lenis";
 import { Logo, BrandLogo } from "@/components/Logo";
 import { Cursor } from "@/components/Cursor";
 import styles from "@/styles.css?url";
@@ -116,27 +115,23 @@ function Footer() {
 
 function RootComponent() {
   useEffect(() => {
-    let lenis: Lenis | null = null;
-    try {
-      lenis = new Lenis({
-        lerp: 0.08,
-        wheelMultiplier: 0.9,
-      });
+    let cleanup: (() => void) | undefined;
 
+    import("lenis").then(({ default: Lenis }) => {
+      const lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.9 });
       let animationFrameId: number;
       function raf(time: number) {
-        lenis?.raf(time);
+        lenis.raf(time);
         animationFrameId = requestAnimationFrame(raf);
       }
       animationFrameId = requestAnimationFrame(raf);
-
-      return () => {
+      cleanup = () => {
         cancelAnimationFrame(animationFrameId);
-        lenis?.destroy();
+        lenis.destroy();
       };
-    } catch {
-      // Ignore if SSR or not supported
-    }
+    }).catch(() => {/* ignore SSR / unsupported */});
+
+    return () => cleanup?.();
   }, []);
 
   return (
