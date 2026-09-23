@@ -97,23 +97,23 @@ function ShutterIntro() {
       }}
     >
       <div className="bg pointer-events-none absolute inset-0 opacity-0 [background:radial-gradient(ellipse_at_center,oklch(0.63_0.13_55/0.35),transparent_60%)]" />
-      <div className="content relative flex flex-col items-center text-cream">
-        <Logo draw className="h-20 w-auto md:h-24" />
-        <div className="mt-6 flex items-baseline font-script text-[clamp(2.75rem,8vw,5.5rem)] italic leading-none">
+      <div className="content relative flex flex-col items-center px-4 py-8 text-center text-cream">
+        <Logo draw className="h-16 w-auto sm:h-20 md:h-24" />
+        <div className="mt-4 sm:mt-6 flex items-baseline font-script text-[clamp(2.25rem,8vw,5.5rem)] italic leading-none">
           <span className="n1 opacity-0">11</span>
-          <span className="colon mx-3 opacity-0">:</span>
+          <span className="colon mx-2 sm:mx-3 opacity-0">:</span>
           <span className="n2 opacity-0">11</span>
         </div>
-        <span className="pic mt-3 font-script text-[clamp(1rem,2.4vw,1.5rem)] tracking-[0.45em] opacity-0">
+        <span className="pic mt-2 sm:mt-3 font-script text-[clamp(0.875rem,2.2vw,1.5rem)] tracking-[0.35em] sm:tracking-[0.45em] opacity-0">
           pictures
         </span>
         <button
           type="button"
           onClick={handleEnter}
           data-cursor="ENTER"
-          className="enter group mt-16 flex flex-col items-center gap-3 text-meta text-cream/70 opacity-0 transition-colors hover:text-cream"
+          className="enter group mt-10 sm:mt-16 flex flex-col items-center gap-3 text-meta text-cream/70 opacity-0 transition-colors hover:text-cream"
         >
-          <span className="block h-8 w-px bg-current opacity-60 transition-transform duration-500 group-hover:scale-y-125" />
+          <span className="block h-6 sm:h-8 w-px bg-current opacity-60 transition-transform duration-500 group-hover:scale-y-125" />
           Enter
         </button>
       </div>
@@ -194,10 +194,10 @@ function Hero() {
         height={864}
         className="absolute inset-0 h-full w-full object-cover opacity-0"
       />
-      <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between px-5 pb-8 md:px-10 md:pb-10">
+      <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between px-5 pb-8 md:px-10 md:pb-12 pb-safe">
         <div data-text className="opacity-0">
           <p className="text-meta text-sand">Film / 01</p>
-          <p className="mt-3 text-h3 text-cream">{featuredFilm.title}</p>
+          <p className="mt-2 sm:mt-3 text-h3 text-cream">{featuredFilm.title}</p>
         </div>
         <Link
           data-text
@@ -217,7 +217,7 @@ function Carousel() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const navigate = useNavigate();
-  const dragRef = useRef({ down: false, x: 0, left: 0, moved: false });
+  const dragRef = useRef({ down: false, x: 0, left: 0, moved: false, isMouse: false });
 
   useEffect(() => {
     const container = containerRef.current;
@@ -253,11 +253,13 @@ function Carousel() {
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (!containerRef.current) return;
-    dragRef.current = { down: true, x: e.clientX, left: containerRef.current.scrollLeft, moved: false };
+    if (e.pointerType === "mouse") {
+      dragRef.current = { down: true, x: e.clientX, left: containerRef.current.scrollLeft, moved: false, isMouse: true };
+    }
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current.down || !containerRef.current) return;
+    if (!dragRef.current.down || !containerRef.current || !dragRef.current.isMouse) return;
     const diff = e.clientX - dragRef.current.x;
     if (Math.abs(diff) > 4) dragRef.current.moved = true;
     containerRef.current.scrollLeft = dragRef.current.left - diff;
@@ -292,8 +294,8 @@ function Carousel() {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <section className="relative py-24 md:py-40" aria-label="Featured films">
-      <p className="text-meta mb-12 text-center text-taupe">Featured</p>
+    <section className="relative py-20 md:py-36" aria-label="Featured films">
+      <p className="text-meta mb-8 sm:mb-12 text-center text-taupe">Featured</p>
       <div
         ref={containerRef}
         data-cursor="← DRAG →"
@@ -301,7 +303,7 @@ function Carousel() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerLeave={onPointerUp}
-        className="no-scrollbar flex touch-pan-x select-none items-center gap-3 overflow-x-auto px-[38vw] md:gap-5"
+        className="no-scrollbar flex touch-pan-x select-none items-center gap-3 sm:gap-5 overflow-x-auto px-[12vw] sm:px-[20vw] md:px-[28vw]"
         style={{ scrollSnapType: "x proximity" }}
       >
         {films.map((film, i) => {
@@ -312,10 +314,10 @@ function Carousel() {
               type="button"
               data-cursor={isActive ? "VIEW" : undefined}
               onClick={(e) => handleSelect(i, e.currentTarget.querySelector("img"))}
-              className={`relative shrink-0 overflow-hidden transition-all duration-700 ease-[var(--ease-cinema)] ${
+              className={`relative shrink-0 overflow-hidden transition-all duration-700 ease-[var(--ease-cinema)] rounded-sm ${
                 isActive
-                  ? "h-[46vh] w-[64vw] md:h-[62vh] md:w-[44vw]"
-                  : "h-[30vh] w-[22vw] opacity-60 hover:opacity-90 md:h-[40vh] md:w-[12vw]"
+                  ? "h-[48vh] w-[76vw] sm:h-[54vh] sm:w-[60vw] md:h-[62vh] md:w-[44vw]"
+                  : "h-[32vh] w-[26vw] opacity-50 hover:opacity-85 sm:h-[38vh] sm:w-[20vw] md:h-[42vh] md:w-[13vw]"
               }`}
               style={{ scrollSnapAlign: "center" }}
               aria-label={`${film.title}, ${film.year}`}
@@ -334,7 +336,7 @@ function Carousel() {
         })}
       </div>
 
-      <div className="mt-12 flex flex-col items-center gap-3 px-5 text-center" aria-live="polite">
+      <div className="mt-8 sm:mt-12 flex flex-col items-center gap-2 sm:gap-3 px-5 text-center" aria-live="polite">
         <p className="text-meta text-taupe">
           {pad(activeIndex + 1)} / {pad(films.length)} — {current.category}
         </p>
@@ -383,19 +385,19 @@ function HomeComponent() {
       <Carousel />
       <ScrollFrames frames={storyFrames} />
 
-      <section className="px-5 py-32 md:px-10 md:py-48">
-        <div className="grid gap-12 md:grid-cols-12">
+      <section className="px-5 py-24 md:px-10 md:py-44">
+        <div className="grid gap-10 md:grid-cols-12 md:gap-12">
           <Reveal className="md:col-span-5">
             <p className="text-meta text-taupe">Archive</p>
-            <h2 className="mt-6 text-h2 text-cream">
+            <h2 className="mt-4 sm:mt-6 text-h2 text-cream">
               Every frame we kept,
               <br />
               in one dark room.
             </h2>
           </Reveal>
-          <Reveal className="md:col-span-6 md:col-start-7" delay={0.15}>
+          <Reveal className="md:col-span-7 md:col-start-6" delay={0.15}>
             <Link to="/archive" data-cursor="VIEW" className="group block">
-              <div className="grid grid-cols-6 gap-1">
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-1 sm:gap-1.5">
                 {allStills.map((src, i) => (
                   <img
                     key={i}
@@ -417,7 +419,7 @@ function HomeComponent() {
         </div>
       </section>
 
-      <section className="border-t border-border px-5 py-32 md:px-10 md:py-48">
+      <section className="border-t border-border px-5 py-24 md:px-10 md:py-40 pb-safe">
         <Reveal>
           <p className="text-meta text-taupe">Contact</p>
           <h2 className="mt-6 text-display text-cream">
@@ -429,7 +431,7 @@ function HomeComponent() {
           </h2>
           <a
             href="mailto:hello@1111pictures.com"
-            className="text-h3 link-line mt-12 inline-block text-sand"
+            className="text-h3 link-line mt-8 sm:mt-12 inline-block text-sand"
           >
             hello@1111pictures.com
           </a>

@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { films } from "@/data/films";
 import { Reveal } from "@/components/Reveal";
 import { BrandLogo } from "@/components/Logo";
@@ -11,19 +11,19 @@ const TOTAL_FRAMES = 144;
 
 function ArchiveComponent() {
   return (
-    <div className="grain min-h-screen bg-warm-black px-5 pb-32 pt-32 md:px-10 md:pt-44">
-      <Reveal className="text-center">
+    <div className="grain min-h-[100svh] bg-warm-black px-4 sm:px-6 pb-24 pt-28 sm:pt-36 md:px-10 md:pt-44 pb-safe">
+      <Reveal className="text-center px-4">
         <p className="text-meta text-taupe">Archive</p>
-        <h1 className="mt-6 text-h2 text-cream">
+        <h1 className="mt-4 sm:mt-6 text-h2 text-cream">
           {TOTAL_FRAMES} frames. {films.length} pictures.
         </h1>
-        <p className="text-meta mt-4 text-taupe/70">
-          Hover to look closer. Click to open the film.
+        <p className="text-meta mt-3 sm:mt-4 text-taupe/70">
+          Tap or hover to look closer. Select to open the film.
         </p>
       </Reveal>
 
-      <Reveal delay={0.2} className="mx-auto mt-20 max-w-6xl">
-        <ul className="grid grid-cols-8 gap-1.5 sm:grid-cols-12 md:grid-cols-16 md:gap-2">
+      <Reveal delay={0.2} className="mx-auto mt-12 sm:mt-20 max-w-6xl">
+        <ul className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-16 gap-1.5 md:gap-2">
           {Array.from({ length: TOTAL_FRAMES }, (_, i) => {
             const film = films[(i * 7 + Math.floor(i / 16)) % films.length]!;
             const still = film.gallery[i % film.gallery.length]!;
@@ -34,7 +34,7 @@ function ArchiveComponent() {
                   params={{ slug: film.slug }}
                   data-cursor="VIEW"
                   aria-label={`${film.title}, frame ${i + 1}`}
-                  className="archive-frame absolute inset-0 block overflow-hidden bg-charcoal"
+                  className="archive-frame absolute inset-0 block overflow-hidden bg-charcoal rounded-[2px]"
                 >
                   <img
                     src={still}
@@ -45,7 +45,7 @@ function ArchiveComponent() {
                     className="h-full w-full object-cover"
                     style={{
                       objectPosition: `${(i * 41) % 100}% ${(i * 29) % 100}%`,
-                      transform: `scale(${1.6 + (i % 5) * 0.3})`,
+                      transform: `scale(${1.4 + (i % 5) * 0.25})`,
                     }}
                   />
                 </Link>
@@ -55,7 +55,7 @@ function ArchiveComponent() {
         </ul>
       </Reveal>
 
-      <Reveal delay={0.1} className="mt-24 flex justify-center">
+      <Reveal delay={0.1} className="mt-16 sm:mt-24 flex justify-center">
         <BrandLogo large className="text-cream/60" />
       </Reveal>
     </div>

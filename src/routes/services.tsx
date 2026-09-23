@@ -1,4 +1,4 @@
-﻿import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { stills } from "@/data/films";
 import { Reveal } from "@/components/Reveal";
@@ -50,7 +50,7 @@ function ServicesComponent() {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-warm-black">
+    <div className="relative min-h-[100svh] overflow-hidden bg-warm-black">
       {serviceItems.map((item, i) => (
         <img
           key={item.n}
@@ -61,23 +61,23 @@ function ServicesComponent() {
           loading="lazy"
           aria-hidden="true"
           className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-all duration-[1200ms] ease-[var(--ease-cinema)] ${
-            activeIdx === i ? "scale-100 opacity-50" : "scale-105 opacity-0"
+            activeIdx === i ? "scale-100 opacity-40 sm:opacity-50" : "scale-105 opacity-0"
           }`}
         />
       ))}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-warm-black via-warm-black/70 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-warm-black via-warm-black/80 to-transparent" />
 
-      <div className="relative px-5 pb-32 pt-32 md:px-10 md:pt-44">
+      <div className="relative px-5 pb-24 pt-28 sm:pt-36 md:px-10 md:pt-44 pb-safe">
         <Reveal>
           <p className="text-meta text-taupe">Services</p>
-          <h1 className="mt-6 text-h1 text-cream">
+          <h1 className="mt-4 sm:mt-6 text-h1 text-cream">
             From the first page
             <br />
             to the final frame.
           </h1>
         </Reveal>
 
-        <ul className="mt-24 max-w-4xl divide-y divide-border">
+        <ul className="mt-14 sm:mt-24 max-w-4xl divide-y divide-border">
           {serviceItems.map((item, i) => (
             <Reveal key={item.n} as="li" delay={i * 0.05}>
               <div
@@ -85,20 +85,21 @@ function ServicesComponent() {
                 onMouseLeave={() => setActiveIdx(null)}
                 onFocus={() => setActiveIdx(i)}
                 onBlur={() => setActiveIdx(null)}
+                onClick={() => setActiveIdx(activeIdx === i ? null : i)}
                 tabIndex={0}
-                className="group grid grid-cols-[3rem_1fr] items-baseline gap-4 py-7 outline-none md:grid-cols-[6rem_1fr_1fr] md:py-9 cursor-pointer"
+                className="group grid grid-cols-[2.5rem_1fr] sm:grid-cols-[3.5rem_1fr] md:grid-cols-[5rem_1fr_1.2fr] items-baseline gap-2 sm:gap-4 py-5 sm:py-7 md:py-9 outline-none cursor-pointer"
               >
                 <span className="text-meta text-taupe">{item.n}</span>
                 <h2
                   className={`text-h2 transition-all duration-500 ease-[var(--ease-cinema)] ${
-                    activeIdx === i ? "translate-x-3 text-cream" : "text-cream/70"
+                    activeIdx === i ? "translate-x-1 sm:translate-x-3 text-cream" : "text-cream/70"
                   }`}
                 >
                   {item.name}
                 </h2>
                 <p
-                  className={`col-start-2 mt-2 max-w-sm text-sm text-taupe transition-opacity duration-500 md:col-start-3 md:mt-0 ${
-                    activeIdx === i ? "opacity-100" : "opacity-40 md:opacity-0"
+                  className={`col-start-2 mt-1.5 sm:mt-2 text-xs sm:text-sm text-taupe transition-all duration-500 leading-relaxed md:col-start-3 md:mt-0 ${
+                    activeIdx === i ? "opacity-100 text-cream/90" : "opacity-60 md:opacity-0"
                   }`}
                 >
                   {item.note}

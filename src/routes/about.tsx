@@ -1,4 +1,4 @@
-﻿import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { stills } from "@/data/films";
 import { Reveal } from "@/components/Reveal";
 import { ScrollFrames, Frame } from "@/components/ScrollFrames";
@@ -58,17 +58,17 @@ const values = [
 function AboutComponent() {
   return (
     <div>
-      <section className="flex min-h-[100svh] flex-col justify-end px-5 pb-16 pt-32 md:px-10 md:pb-24">
+      <section className="flex min-h-[100svh] flex-col justify-end px-5 pb-12 pt-28 sm:pt-36 md:px-10 md:pb-20 pb-safe">
         <Reveal>
           <p className="text-meta text-taupe">About</p>
-          <h1 className="mt-8 text-display text-cream">
+          <h1 className="mt-6 sm:mt-8 text-display text-cream">
             We make
             <br />
             pictures.
           </h1>
         </Reveal>
-        <Reveal delay={0.2} className="mt-12 md:ml-[50%]">
-          <p className="text-body-lg max-w-md text-cream/70">
+        <Reveal delay={0.2} className="mt-8 sm:mt-12 md:ml-[50%]">
+          <p className="text-body-lg max-w-md text-cream/70 leading-relaxed">
             Stories that remain after the screen goes dark. A small production house in Mumbai
             making features, shorts, commercials and music films — slowly, and with people we
             trust.
@@ -78,21 +78,21 @@ function AboutComponent() {
 
       <ScrollFrames frames={aboutFrames} />
 
-      <section className="px-5 py-32 md:px-10 md:py-48">
-        <div className="grid gap-12 md:grid-cols-12">
+      <section className="px-5 py-24 md:px-10 md:py-40 pb-safe">
+        <div className="grid gap-8 md:grid-cols-12 md:gap-12">
           <Reveal className="md:col-span-4">
             <p className="text-meta text-taupe">How we work</p>
           </Reveal>
-          <div className="space-y-16 md:col-span-6 md:col-start-6">
+          <div className="space-y-10 sm:space-y-14 md:space-y-16 md:col-span-7 md:col-start-6">
             {values.map(([title, desc], i) => (
               <Reveal key={title} delay={i * 0.08}>
                 <h2 className="text-h2 text-cream">{title}</h2>
-                <p className="text-body-lg mt-4 max-w-lg text-cream/65">{desc}</p>
+                <p className="text-body-lg mt-3 sm:mt-4 max-w-lg text-cream/65 leading-relaxed">{desc}</p>
               </Reveal>
             ))}
           </div>
         </div>
-        <Reveal className="mt-32">
+        <Reveal className="mt-20 sm:mt-28 md:mt-32">
           <Link to="/services" className="text-meta link-line text-sand">
             What we can do for you →
           </Link>

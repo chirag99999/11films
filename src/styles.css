@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @layer theme {
   :root {
@@ -111,14 +111,24 @@
     filter: saturate(0.4) brightness(0.65);
   }
 
-  .archive-frame:hover {
-    filter: saturate(1) brightness(1);
-    z-index: 20;
-    transform: scale(2.4);
+  @media (hover: hover) {
+    .archive-frame:hover {
+      filter: saturate(1) brightness(1);
+      z-index: 20;
+      transform: scale(2.2);
+    }
+  }
+
+  @media (hover: none) {
+    .archive-frame:active {
+      filter: saturate(1) brightness(1);
+      transform: scale(1.1);
+    }
   }
 
   .no-scrollbar {
     scrollbar-width: none;
+    -ms-overflow-style: none;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -132,42 +142,50 @@
   .text-meta {
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    font-size: 0.6875rem;
+    font-size: clamp(0.625rem, 0.75vw, 0.6875rem);
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.2;
   }
 
   .text-display {
     letter-spacing: -0.04em;
-    font-size: clamp(3.5rem, 11vw, 10rem);
+    font-size: clamp(2.5rem, 8.5vw, 9.5rem);
     font-weight: 500;
-    line-height: 0.88;
+    line-height: 0.9;
   }
 
   .text-h1 {
     letter-spacing: -0.035em;
-    font-size: clamp(2.75rem, 6.5vw, 6rem);
+    font-size: clamp(1.875rem, 5.2vw, 5.5rem);
     font-weight: 500;
-    line-height: 0.95;
+    line-height: 0.98;
   }
 
   .text-h2 {
     letter-spacing: -0.03em;
-    font-size: clamp(2rem, 4.2vw, 4rem);
+    font-size: clamp(1.5rem, 3.6vw, 3.75rem);
     font-weight: 500;
-    line-height: 1;
+    line-height: 1.05;
   }
 
   .text-h3 {
     letter-spacing: -0.02em;
-    font-size: clamp(1.375rem, 2.2vw, 2rem);
+    font-size: clamp(1.15rem, 2vw, 1.875rem);
     font-weight: 500;
-    line-height: 1.1;
+    line-height: 1.15;
   }
 
   .text-body-lg {
     letter-spacing: -0.005em;
-    font-size: clamp(1.0625rem, 1.3vw, 1.25rem);
+    font-size: clamp(0.95rem, 1.2vw, 1.25rem);
     line-height: 1.5;
+  }
+
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 1.5rem));
+  }
+
+  .pt-safe {
+    padding-top: max(1.25rem, env(safe-area-inset-top, 1.25rem));
   }
 }

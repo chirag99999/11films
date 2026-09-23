@@ -22,23 +22,48 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
       gsap.registerPlugin(ScrollTrigger);
 
       mm = gsap.matchMedia();
+
       mm.add(
         {
-          motion: "(prefers-reduced-motion: no-preference)",
-          desktop: "(min-width: 768px)",
+          isMobile: "(max-width: 767px)",
+          isTablet: "(min-width: 768px) and (max-width: 1024px)",
+          isDesktop: "(min-width: 1025px)",
+          reduceMotion: "(prefers-reduced-motion: reduce)",
         },
         (context) => {
-          const isDesktop = context.conditions?.desktop;
+          const { isMobile, isTablet, reduceMotion } = context.conditions || {};
+
+          if (reduceMotion) {
+            gsap.set(container.querySelectorAll("[data-frame]"), {
+              position: "relative",
+              autoAlpha: 1,
+              height: "auto",
+            });
+            gsap.set(container.querySelectorAll("[data-img], [data-text]"), {
+              autoAlpha: 1,
+              clearProps: "transform",
+            });
+            return;
+          }
+
           const frameEls = gsap.utils.toArray<HTMLElement>(
             container.querySelectorAll("[data-frame]")
           );
+
+          // Calibrated scales and rotations per viewport size
+          const startScale = isMobile ? 0.85 : isTablet ? 0.6 : 0.44;
+          const midScale = isMobile ? 0.95 : isTablet ? 0.72 : 0.58;
+          const startRotate = isMobile ? -1.5 : isTablet ? -3 : -4.5;
+          const endDuration = isMobile ? 85 : isTablet ? 105 : 120;
 
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: container,
               start: "top top",
-              end: () => `+=${frames.length * (isDesktop ? 120 : 90)}%`,
+              end: () => `+=${frames.length * endDuration}%`,
               pin: true,
+              pinSpacing: true,
+              anticipatePin: 1,
               scrub: 1,
             },
           });
@@ -52,13 +77,13 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
               .fromTo(
                 img,
                 {
-                  scale: isDesktop ? 0.42 : 0.7,
-                  rotate: -5,
-                  yPercent: 8,
+                  scale: startScale,
+                  rotate: startRotate,
+                  yPercent: isMobile ? 4 : 8,
                   autoAlpha: 0,
                 },
                 {
-                  scale: isDesktop ? 0.55 : 0.8,
+                  scale: midScale,
                   rotate: 0,
                   yPercent: 0,
                   autoAlpha: 1,
@@ -69,12 +94,12 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
               )
               .fromTo(
                 text,
-                { autoAlpha: 0, y: 30 },
+                { autoAlpha: 0, y: isMobile ? 18 : 28 },
                 { autoAlpha: 1, y: 0, duration: 0.6 },
                 step + 0.7
               )
-              .to(img, { scale: 1, duration: 1, ease: "power3.inOut" }, step + 1.4)
-              .to(text, { autoAlpha: 0, y: -20, duration: 0.5 }, step + 1.5);
+              .to(img, { scale: 1.02, duration: 1, ease: "power3.inOut" }, step + 1.4)
+              .to(text, { autoAlpha: 0, y: -16, duration: 0.5 }, step + 1.5);
 
             if (i < frameEls.length - 1) {
               tl.to(img, { autoAlpha: 0, scale: 1.08, duration: 0.6 }, step + 2.5).set(
@@ -86,18 +111,6 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
           });
         }
       );
-
-      mm.add("(prefers-reduced-motion: reduce)", () => {
-        gsap.set(container.querySelectorAll("[data-frame]"), {
-          position: "relative",
-          autoAlpha: 1,
-          height: "auto",
-        });
-        gsap.set(container.querySelectorAll("[data-img], [data-text]"), {
-          autoAlpha: 1,
-          clearProps: "transform",
-        });
-      });
     });
 
     return () => mm?.revert();
@@ -106,7 +119,7 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
   return (
     <div
       ref={containerRef}
-      className="relative h-screen w-full overflow-hidden bg-warm-black"
+      className="relative h-[100svh] w-full overflow-hidden bg-warm-black"
     >
       {frames.map((f) => (
         <div
@@ -125,12 +138,14 @@ export function ScrollFrames({ frames }: { frames: Frame[] }) {
           />
           <div
             data-text
-            className="absolute inset-x-0 bottom-0 z-10 px-5 pb-16 opacity-0 md:px-10 md:pb-20"
+            className="absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-warm-black/90 via-warm-black/50 to-transparent px-5 pb-14 pt-16 opacity-0 md:px-10 md:pb-20 pb-safe"
           >
-            <p className="text-meta mb-4 text-sand">{f.eyebrow}</p>
+            <p className="text-meta mb-3 text-sand">{f.eyebrow}</p>
             <h3 className="text-h1 max-w-4xl text-cream">{f.title}</h3>
             {f.body && (
-              <p className="text-body-lg mt-5 max-w-md text-cream/80">{f.body}</p>
+              <p className="text-body-lg mt-3 max-w-lg text-cream/80 sm:mt-5">
+                {f.body}
+              </p>
             )}
           </div>
         </div>
