@@ -214,69 +214,66 @@ function Hero() {
 }
 
 function Carousel() {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const navigate = useNavigate();
-  const dragRef = useRef({ down: false, x: 0, left: 0, moved: false, isMouse: false });
+  const stRef = useRef<any>(null);
 
   useEffect(() => {
+    const section = sectionRef.current;
     const container = containerRef.current;
-    if (!container) return;
+    if (!section || !container) return;
 
-    const onScroll = () => {
-      const center = container.scrollLeft + container.clientWidth / 2;
-      let closestIdx = 0;
-      let minDistance = Infinity;
+    let st: any;
 
-      Array.from(container.children).forEach((child, i) => {
-        const el = child as HTMLElement;
-        const elCenter = el.offsetLeft + el.offsetWidth / 2;
-        const dist = Math.abs(elCenter - center);
-        if (dist < minDistance) {
-          minDistance = dist;
-          closestIdx = i;
-        }
+    import("gsap/ScrollTrigger").then(({ ScrollTrigger }) => {
+      if (!sectionRef.current || !containerRef.current) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      const isMobile = window.matchMedia("(max-width: 767px)").matches;
+      // Scroll distance gives smooth, ample scrolling room across all films
+      const scrollDistance = films.length * (isMobile ? 550 : 750);
+
+      st = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: () => `+=${scrollDistance}`,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        scrub: 0.8,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          if (!containerRef.current) return;
+          const maxScroll = containerRef.current.scrollWidth - containerRef.current.clientWidth;
+          if (maxScroll > 0) {
+            containerRef.current.scrollLeft = self.progress * maxScroll;
+          }
+          const rawIdx = self.progress * (films.length - 1);
+          const closestIdx = Math.min(films.length - 1, Math.max(0, Math.round(rawIdx)));
+          setActiveIndex(closestIdx);
+        },
       });
-      setActiveIndex(closestIdx);
+
+      stRef.current = st;
+    });
+
+    return () => {
+      st?.kill();
     };
-
-    const initialIdx = Math.max(0, films.findIndex((f) => f.featured));
-    const targetEl = container.children[initialIdx] as HTMLElement | undefined;
-    if (targetEl) {
-      container.scrollLeft = targetEl.offsetLeft + targetEl.offsetWidth / 2 - container.clientWidth / 2;
-    }
-
-    onScroll();
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
   }, []);
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (!containerRef.current) return;
-    if (e.pointerType === "mouse") {
-      dragRef.current = { down: true, x: e.clientX, left: containerRef.current.scrollLeft, moved: false, isMouse: true };
-    }
-  };
-
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current.down || !containerRef.current || !dragRef.current.isMouse) return;
-    const diff = e.clientX - dragRef.current.x;
-    if (Math.abs(diff) > 4) dragRef.current.moved = true;
-    containerRef.current.scrollLeft = dragRef.current.left - diff;
-  };
-
-  const onPointerUp = () => {
-    dragRef.current.down = false;
-  };
-
   const handleSelect = (idx: number, imgEl: HTMLImageElement | null) => {
-    if (dragRef.current.moved || !containerRef.current) return;
-
     if (idx !== activeIndex) {
-      const target = containerRef.current.children[idx] as HTMLElement | undefined;
-      if (target) {
-        containerRef.current.scrollTo({
-          left: target.offsetLeft + target.offsetWidth / 2 - containerRef.current.clientWidth / 2,
+      if (stRef.current) {
+        // Smoothly scroll the window to the exact pin-progress matching this slide
+        const targetProgress = idx / (films.length - 1);
+        const targetScroll =
+          stRef.current.start +
+          targetProgress * (stRef.current.end - stRef.current.start);
+        window.scrollTo({
+          top: targetScroll,
           behavior: "smooth",
         });
       }
@@ -294,56 +291,65 @@ function Carousel() {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <section className="relative py-20 md:py-36" aria-label="Featured films">
-      <p className="text-meta mb-8 sm:mb-12 text-center text-taupe">Featured</p>
-      <div
-        ref={containerRef}
-        data-cursor="← DRAG →"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerLeave={onPointerUp}
-        className="no-scrollbar flex touch-pan-x select-none items-center gap-3 sm:gap-5 overflow-x-auto px-[12vw] sm:px-[20vw] md:px-[28vw]"
-        style={{ scrollSnapType: "x proximity" }}
-      >
-        {films.map((film, i) => {
-          const isActive = i === activeIndex;
-          return (
-            <button
-              key={film.slug}
-              type="button"
-              data-cursor={isActive ? "VIEW" : undefined}
-              onClick={(e) => handleSelect(i, e.currentTarget.querySelector("img"))}
-              className={`relative shrink-0 overflow-hidden transition-all duration-700 ease-[var(--ease-cinema)] rounded-sm ${
-                isActive
-                  ? "h-[48vh] w-[76vw] sm:h-[54vh] sm:w-[60vw] md:h-[62vh] md:w-[44vw]"
-                  : "h-[32vh] w-[26vw] opacity-50 hover:opacity-85 sm:h-[38vh] sm:w-[20vw] md:h-[42vh] md:w-[13vw]"
-              }`}
-              style={{ scrollSnapAlign: "center" }}
-              aria-label={`${film.title}, ${film.year}`}
-            >
-              <img
-                src={film.hero}
-                alt={film.title}
-                width={1536}
-                height={864}
-                loading="lazy"
-                draggable={false}
-                className="h-full w-full object-cover"
-              />
-            </button>
-          );
-        })}
+    <section
+      ref={sectionRef}
+      className="relative h-[100svh] w-full flex flex-col justify-between overflow-hidden bg-warm-black"
+      aria-label="Featured films"
+    >
+      {/* Top Header Label */}
+      <div className="pt-20 sm:pt-24 md:pt-28 pb-2 text-center shrink-0">
+        <p className="text-meta text-taupe tracking-[0.25em]">Featured</p>
       </div>
 
-      <div className="mt-8 sm:mt-12 flex flex-col items-center gap-2 sm:gap-3 px-5 text-center" aria-live="polite">
-        <p className="text-meta text-taupe">
+      {/* Middle Carousel Track */}
+      <div className="flex-1 flex items-center justify-center min-h-0 w-full overflow-hidden">
+        <div
+          ref={containerRef}
+          className="no-scrollbar flex select-none items-center gap-3 sm:gap-5 overflow-x-auto w-full py-2 px-[12vw] sm:px-[20vw] md:px-[28vw] pointer-events-auto"
+        >
+          {films.map((film, i) => {
+            const isActive = i === activeIndex;
+            return (
+              <button
+                key={film.slug}
+                type="button"
+                data-cursor={isActive ? "VIEW" : "SELECT"}
+                onClick={(e) => handleSelect(i, e.currentTarget.querySelector("img"))}
+                className={`relative shrink-0 overflow-hidden transition-all duration-700 ease-[var(--ease-cinema)] rounded-sm focus:outline-none ${
+                  isActive
+                    ? "h-[46vh] w-[76vw] sm:h-[52vh] sm:w-[60vw] md:h-[58vh] md:w-[44vw] opacity-100 shadow-2xl z-10"
+                    : "h-[30vh] w-[26vw] opacity-40 hover:opacity-75 sm:h-[36vh] sm:w-[20vw] md:h-[40vh] md:w-[13vw]"
+                }`}
+                style={{ scrollSnapAlign: "center" }}
+                aria-label={`${film.title}, ${film.year}`}
+              >
+                <img
+                  src={film.hero}
+                  alt={film.title}
+                  width={1536}
+                  height={864}
+                  loading="lazy"
+                  draggable={false}
+                  className="h-full w-full object-cover pointer-events-none"
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bottom Film Details */}
+      <div
+        className="pb-8 sm:pb-12 pt-2 px-5 text-center flex flex-col items-center gap-2 sm:gap-2.5 shrink-0 pb-safe"
+        aria-live="polite"
+      >
+        <p className="text-meta text-taupe transition-colors duration-300">
           {pad(activeIndex + 1)} / {pad(films.length)} — {current.category}
         </p>
         <h2 key={current.slug} className="text-h1 animate-fade-in text-cream">
           {current.title}
         </h2>
-        <p className="text-meta text-taupe">
+        <p className="text-meta text-taupe transition-colors duration-300">
           {current.director} · {current.year} · {current.runtime}
         </p>
       </div>

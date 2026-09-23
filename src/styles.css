@@ -188,4 +188,19 @@
   .pt-safe {
     padding-top: max(1.25rem, env(safe-area-inset-top, 1.25rem));
   }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s var(--ease-cinema) forwards;
+  }
 }
